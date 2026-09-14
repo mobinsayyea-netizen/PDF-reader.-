@@ -33,14 +33,18 @@ jobs:
           npm install 2>&1 | tee step_output.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
-            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            grep -iE "error|err|exception|fail|could not|unable|not found|cannot|^e: " step_output.log | tail -n 40 > errors_only.log || true
             if [ -s errors_only.log ]; then
               while IFS= read -r line; do
                 escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
                 echo "::error::$escaped"
               done < errors_only.log
             else
-              echo "::error::npm install failed with exit code $status but no obvious error line was found."
+              tail -n 25 step_output.log > errors_only.log
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
             fi
             exit 1
           fi
@@ -52,14 +56,18 @@ jobs:
           npx cap add android 2>&1 | tee step_output.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
-            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            grep -iE "error|err|exception|fail|could not|unable|not found|cannot|^e: " step_output.log | tail -n 40 > errors_only.log || true
             if [ -s errors_only.log ]; then
               while IFS= read -r line; do
                 escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
                 echo "::error::$escaped"
               done < errors_only.log
             else
-              echo "::error::cap add android failed with exit code $status but no obvious error line was found."
+              tail -n 25 step_output.log > errors_only.log
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
             fi
             exit 1
           fi
@@ -71,14 +79,18 @@ jobs:
           npx @capacitor/assets generate --android 2>&1 | tee step_output.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
-            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            grep -iE "error|err|exception|fail|could not|unable|not found|cannot|^e: " step_output.log | tail -n 40 > errors_only.log || true
             if [ -s errors_only.log ]; then
               while IFS= read -r line; do
                 escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
                 echo "::error::$escaped"
               done < errors_only.log
             else
-              echo "::error::Generate app icons failed with exit code $status but no obvious error line was found."
+              tail -n 25 step_output.log > errors_only.log
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
             fi
             exit 1
           fi
@@ -90,14 +102,18 @@ jobs:
           npx cap sync android 2>&1 | tee step_output.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
-            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            grep -iE "error|err|exception|fail|could not|unable|not found|cannot|^e: " step_output.log | tail -n 40 > errors_only.log || true
             if [ -s errors_only.log ]; then
               while IFS= read -r line; do
                 escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
                 echo "::error::$escaped"
               done < errors_only.log
             else
-              echo "::error::cap sync android failed with exit code $status but no obvious error line was found."
+              tail -n 25 step_output.log > errors_only.log
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
             fi
             exit 1
           fi
@@ -113,14 +129,18 @@ jobs:
           ./gradlew assembleDebug 2>&1 | tee step_output.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
-            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            grep -iE "error|err|exception|fail|could not|unable|not found|cannot|^e: " step_output.log | tail -n 40 > errors_only.log || true
             if [ -s errors_only.log ]; then
               while IFS= read -r line; do
                 escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
                 echo "::error::$escaped"
               done < errors_only.log
             else
-              echo "::error::Gradle build failed with exit code $status but no obvious error line was found."
+              tail -n 25 step_output.log > errors_only.log
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
             fi
             exit 1
           fi
