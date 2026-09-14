@@ -1,0 +1,17 @@
+{
+  "name": "mobin-pdf-reader",
+  "version": "1.0.0",
+  "description": "Mobin PDF Reader — accessible PDF reader with AI-powered TTS, translate, summarize and ask features",
+  "scripts": {
+    "android": "npx cap add android && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capgo/capacitor-speech-synthesis": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.0.0"
+  }
+}

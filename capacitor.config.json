@@ -1,0 +1,8 @@
+{
+  "appId": "com.mobin.pdfreader",
+  "appName": "Mobin PDF Reader",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}

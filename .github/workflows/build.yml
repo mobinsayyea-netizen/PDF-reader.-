@@ -1,0 +1,132 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Accept Android SDK licenses (SDK is pre-installed on this runner)
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set +e
+          npm install 2>&1 | tee step_output.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            if [ -s errors_only.log ]; then
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
+            else
+              echo "::error::npm install failed with exit code $status but no obvious error line was found."
+            fi
+            exit 1
+          fi
+
+      - name: Add Android platform
+        shell: bash
+        run: |
+          set +e
+          npx cap add android 2>&1 | tee step_output.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            if [ -s errors_only.log ]; then
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
+            else
+              echo "::error::cap add android failed with exit code $status but no obvious error line was found."
+            fi
+            exit 1
+          fi
+
+      - name: Generate app icons from resources/icon.png
+        shell: bash
+        run: |
+          set +e
+          npx @capacitor/assets generate --android 2>&1 | tee step_output.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            if [ -s errors_only.log ]; then
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
+            else
+              echo "::error::Generate app icons failed with exit code $status but no obvious error line was found."
+            fi
+            exit 1
+          fi
+
+      - name: Sync web assets into Android project
+        shell: bash
+        run: |
+          set +e
+          npx cap sync android 2>&1 | tee step_output.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            if [ -s errors_only.log ]; then
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
+            else
+              echo "::error::cap sync android failed with exit code $status but no obvious error line was found."
+            fi
+            exit 1
+          fi
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        shell: bash
+        working-directory: android
+        run: |
+          set +e
+          ./gradlew assembleDebug 2>&1 | tee step_output.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            grep -iE "error|exception|failure|could not|^e: " step_output.log | tail -n 40 > errors_only.log || true
+            if [ -s errors_only.log ]; then
+              while IFS= read -r line; do
+                escaped=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$escaped"
+              done < errors_only.log
+            else
+              echo "::error::Gradle build failed with exit code $status but no obvious error line was found."
+            fi
+            exit 1
+          fi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobin-pdf-reader-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
